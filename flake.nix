@@ -26,7 +26,7 @@
             inherit version;
             
             src = ./.;
-            vendorHash = null;
+            vendorHash = "sha256-0Wa9vvJZieiW1pYB4UrXJXNV5MRmWsh3LgrgPFdgU3A=";
           };
           default = pingshutdown;
         });
