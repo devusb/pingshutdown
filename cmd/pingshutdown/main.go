@@ -15,7 +15,7 @@ import (
 )
 
 type Specification struct {
-	Target            string        `default:"www.google.com"`
+	Target            string `default:"www.google.com"`
 	NotificationUser  string
 	NotificationToken string
 	Notification      bool          `default:"false"`
@@ -46,10 +46,10 @@ func main() {
 
 	shutdownTimer := countdown.Countdown{Duration: s.Delay}
 	notification := pushover.Notification{
-		User:  s.NotificationUser,
-		Token: s.NotificationToken,
-		RetryWaitMax: s.Delay/2,
-		RetryMax: 20,
+		User:         s.NotificationUser,
+		Token:        s.NotificationToken,
+		RetryWaitMax: s.Delay / 2,
+		RetryMax:     20,
 	}
 	timerLockout := false
 	dryRun = s.DryRun
@@ -80,7 +80,7 @@ func main() {
 			} else if (pinger.Statistics().PacketLoss < 100 || timerLockout) && shutdownTimer.Status() {
 				fmt.Println("timer stopped")
 				shutdownTimer.Stop()
-			} 
+			}
 		}
 	}()
 
