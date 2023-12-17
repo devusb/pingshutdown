@@ -5,10 +5,10 @@ import (
 )
 
 type Countdown struct {
-	endTime time.Time
-	Duration time.Duration
+	endTime       time.Time
+	Duration      time.Duration
 	runningStatus bool
-	timer *time.Timer
+	timer         *time.Timer
 }
 
 func (c *Countdown) Start() {
@@ -42,5 +42,3 @@ func (c *Countdown) EndTime() time.Time {
 func (c *Countdown) Status() bool {
 	return c.runningStatus
 }
-
-

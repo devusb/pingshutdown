@@ -2,21 +2,21 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
-	"log"
 
 	"github.com/devusb/pingshutdown/internal/countdown"
 	"github.com/devusb/pingshutdown/internal/pushover"
-	"github.com/prometheus-community/pro-bing"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/prometheus-community/pro-bing"
 )
 
 type Specification struct {
-	Target string `default:"www.google.com"`
-	NotificationUser string
+	Target            string `default:"www.google.com"`
+	NotificationUser  string
 	NotificationToken string
-	Delay time.Duration
+	Delay             time.Duration
 }
 
 func shutdown() {
@@ -32,7 +32,7 @@ func main() {
 
 	shutdownTimer := countdown.Countdown{Duration: s.Delay}
 	notification := pushover.Notification{
-		User: s.NotificationUser,
+		User:  s.NotificationUser,
 		Token: s.NotificationToken,
 	}
 	timerLockout := false
@@ -46,7 +46,7 @@ func main() {
 			pinger.Count = 5
 			pinger.Timeout = 5 * time.Second
 			pinger.Run()
-			if (pinger.Statistics().PacketLoss == 100 && !timerLockout && !shutdownTimer.Status()) {
+			if pinger.Statistics().PacketLoss == 100 && !timerLockout && !shutdownTimer.Status() {
 				fmt.Println("all pings failed")
 				_, err := notification.Send("all pings failed")
 				if err != nil {
@@ -54,7 +54,7 @@ func main() {
 				}
 				shutdownTimer.StartAfterFunc(shutdown)
 
-			} else if ((pinger.Statistics().PacketLoss < 100 || timerLockout) && shutdownTimer.Status()) {
+			} else if (pinger.Statistics().PacketLoss < 100 || timerLockout) && shutdownTimer.Status() {
 				fmt.Println("some pings succeeded")
 				shutdownTimer.Stop()
 			} else {
@@ -63,7 +63,7 @@ func main() {
 		}
 	}()
 
-	log.Fatal(http.ListenAndServe(":8081",nil))
+	log.Fatal(http.ListenAndServe(":8081", nil))
 
 	select {}
 }

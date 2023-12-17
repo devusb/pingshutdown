@@ -1,15 +1,15 @@
 package pushover
 
 import (
-	"time"
-	"net/url"
-	"net/http"
 	"github.com/hashicorp/go-retryablehttp"
+	"net/http"
+	"net/url"
+	"time"
 )
 
 type Notification struct {
 	Token string
-	User string
+	User  string
 }
 
 func (n *Notification) Send(message string) (*http.Response, error) {
@@ -20,11 +20,11 @@ func (n *Notification) Send(message string) (*http.Response, error) {
 	client.RetryMax = 10
 
 	data := url.Values{
-		"token": {n.Token},
-		"user": {n.User},
+		"token":   {n.Token},
+		"user":    {n.User},
 		"message": {message},
 	}
-	
+
 	resp, err := client.PostForm(notificationURL, data)
 
 	return resp, err

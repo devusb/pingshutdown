@@ -1,13 +1,12 @@
 package main
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 	"time"
-	
+
 	"github.com/devusb/pingshutdown/internal/countdown"
 )
-
 
 func HandleStatus(c *countdown.Countdown, lock *bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
