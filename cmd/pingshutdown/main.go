@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"time"
 
@@ -50,6 +51,10 @@ func main() {
 	}
 	timerLockout := false
 	dryRun = s.DryRun
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Println(err)
+	}
 
 	http.HandleFunc("/", HandleStatus(&shutdownTimer, &timerLockout))
 	http.HandleFunc("/lockout", HandleLockout(&timerLockout))
@@ -60,22 +65,21 @@ func main() {
 			pinger.Count = 5
 			pinger.Timeout = 5 * time.Second
 			pinger.Run()
-			if pinger.Statistics().PacketLoss == 100 && !timerLockout && !shutdownTimer.Status() {
-				fmt.Println("all pings failed")
+			fmt.Println(pinger.Statistics())
+			if (pinger.Statistics().PacketLoss == 100 || pinger.Statistics().PacketsSent == 0) && !timerLockout && !shutdownTimer.Status() {
+				fmt.Println("all pings failed, timer started")
+				shutdownTimer.StartAfterFunc(shutdown)
 				if s.Notification {
-					_, err := notification.Send("all pings failed")
+					_, err := notification.Send(fmt.Sprintf("%s shutdown timer has started, shutdown at %s", hostname, shutdownTimer.EndTime()))
 					if err != nil {
 						log.Println(err)
 					}
 				}
-				shutdownTimer.StartAfterFunc(shutdown)
 
 			} else if (pinger.Statistics().PacketLoss < 100 || timerLockout) && shutdownTimer.Status() {
-				fmt.Println("some pings succeeded")
+				fmt.Println("timer stopped")
 				shutdownTimer.Stop()
-			} else {
-				fmt.Printf("no state change, current timer state is %s\n", shutdownTimer.Status())
-			}
+			} 
 		}
 	}()
 
