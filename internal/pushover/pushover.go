@@ -9,7 +9,7 @@ import (
 )
 
 type Notification struct {
-	Token 	     string
+	Token        string
 	User         string
 	RetryWaitMax time.Duration
 	RetryMax     int

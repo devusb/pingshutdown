@@ -19,7 +19,7 @@ func HandleStatus(c *countdown.Countdown, lock *bool, s *Specification) http.Han
 		} else if *lock == true {
 			timerStatus = "locked out"
 		}
-		w.Header().Set("Content-Type","text/html")
+		w.Header().Set("Content-Type", "text/html")
 
 		html := fmt.Sprintf("<html><body><p>Pinging %s</p>", s.Target)
 		html += fmt.Sprintf("<p>Shutdown timer is %s</p>", timerStatus)
