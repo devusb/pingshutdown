@@ -15,7 +15,7 @@ import (
 )
 
 type Specification struct {
-	Target            string `default:"www.google.com"`
+	Target            string        `default:"www.google.com"`
 	NotificationUser  string
 	NotificationToken string
 	Notification      bool          `default:"false"`
@@ -48,6 +48,8 @@ func main() {
 	notification := pushover.Notification{
 		User:  s.NotificationUser,
 		Token: s.NotificationToken,
+		RetryWaitMax: s.Delay/2,
+		RetryMax: 20,
 	}
 	timerLockout := false
 	dryRun = s.DryRun
@@ -65,7 +67,6 @@ func main() {
 			pinger.Count = 5
 			pinger.Timeout = 5 * time.Second
 			pinger.Run()
-			fmt.Println(pinger.Statistics())
 			if (pinger.Statistics().PacketLoss == 100 || pinger.Statistics().PacketsSent == 0) && !timerLockout && !shutdownTimer.Status() {
 				fmt.Println("all pings failed, timer started")
 				shutdownTimer.StartAfterFunc(shutdown)
