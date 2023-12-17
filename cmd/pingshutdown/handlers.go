@@ -30,6 +30,6 @@ func HandleLockout(lock *bool) http.HandlerFunc {
 		} else {
 			*lock = true
 		}
-		http.Redirect(w, r, "/status", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }

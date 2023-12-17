@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 	"time"
 
 	"github.com/devusb/pingshutdown/internal/countdown"
@@ -16,12 +17,24 @@ type Specification struct {
 	Target            string `default:"www.google.com"`
 	NotificationUser  string
 	NotificationToken string
-	Delay             time.Duration
+	Notification      bool          `default:"false"`
+	Delay             time.Duration `default:"5m"`
+	StatusPort        string        `default:"8081"`
+	DryRun            bool          `default:"false"`
 }
 
 func shutdown() {
 	fmt.Println("shutting down system!")
+	if !dryRun {
+		cmd := exec.Command("poweroff")
+		err := cmd.Run()
+		if err != nil {
+			log.Println(err)
+		}
+	}
 }
+
+var dryRun = false
 
 func main() {
 	var s Specification
@@ -36,8 +49,9 @@ func main() {
 		Token: s.NotificationToken,
 	}
 	timerLockout := false
+	dryRun = s.DryRun
 
-	http.HandleFunc("/status", HandleStatus(&shutdownTimer, &timerLockout))
+	http.HandleFunc("/", HandleStatus(&shutdownTimer, &timerLockout))
 	http.HandleFunc("/lockout", HandleLockout(&timerLockout))
 
 	go func() {
@@ -48,9 +62,11 @@ func main() {
 			pinger.Run()
 			if pinger.Statistics().PacketLoss == 100 && !timerLockout && !shutdownTimer.Status() {
 				fmt.Println("all pings failed")
-				_, err := notification.Send("all pings failed")
-				if err != nil {
-					log.Println(err)
+				if s.Notification {
+					_, err := notification.Send("all pings failed")
+					if err != nil {
+						log.Println(err)
+					}
 				}
 				shutdownTimer.StartAfterFunc(shutdown)
 
@@ -63,7 +79,7 @@ func main() {
 		}
 	}()
 
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", s.StatusPort), nil))
 
 	select {}
 }

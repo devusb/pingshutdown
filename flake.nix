@@ -41,6 +41,8 @@
 
             PINGSHUTDOWN_DELAY = "15s";
             PINGSHUTDOWN_TARGET = "192.0.2.100";
+            PINGSHUTDOWN_NOTIFICATION = "true";
+            PINGSHUTDOWN_DRYRUN = "true";
 
             shellHook = ''
               if [ -f ".env" ]; then
