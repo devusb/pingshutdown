@@ -13,25 +13,25 @@ type Countdown struct {
 
 func (c *Countdown) Start() {
 	if !c.runningStatus {
+		c.runningStatus = true
 		c.timer = time.NewTimer(c.Duration)
 		c.endTime = time.Now().Add(c.Duration)
-		c.runningStatus = true
 	}
 }
 
 func (c *Countdown) StartAfterFunc(f func()) {
 	if !c.runningStatus {
+		c.runningStatus = true
 		c.timer = time.AfterFunc(c.Duration, f)
 		c.endTime = time.Now().Add(c.Duration)
-		c.runningStatus = true
 	}
 }
 
 func (c *Countdown) Stop() {
 	if c.runningStatus {
+		c.runningStatus = false
 		c.timer.Stop()
 		c.endTime = time.Now()
-		c.runningStatus = false
 	}
 }
 

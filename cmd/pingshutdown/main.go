@@ -1,62 +1,64 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"time"
 	"log"
 
 	"github.com/devusb/pingshutdown/internal/countdown"
+	"github.com/devusb/pingshutdown/internal/pushover"
 	"github.com/prometheus-community/pro-bing"
+	"github.com/kelseyhightower/envconfig"
 )
+
+type Specification struct {
+	Target string `default:"www.google.com"`
+	NotificationUser string
+	NotificationToken string
+	Delay time.Duration
+}
 
 func shutdown() {
 	fmt.Println("shutting down system!")
 }
 
 func main() {
-	target := flag.String("t", "www.google.com", "target to begin shutdown when unavailable")
+	var s Specification
+	err := envconfig.Process("pingshutdown", &s)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-	flag.Parse()
-
-	shutdownTimer := countdown.Countdown{Duration: 15*time.Second}
+	shutdownTimer := countdown.Countdown{Duration: s.Delay}
+	notification := pushover.Notification{
+		User: s.NotificationUser,
+		Token: s.NotificationToken,
+	}
 	timerLockout := false
 
-	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		timerStatus := "not in progress"
-		secondsRemaining := shutdownTimer.EndTime().Sub(time.Now())
-		if shutdownTimer.Status() && secondsRemaining > 0 {
-			timerStatus = fmt.Sprintf("in progress, shutdown in %s", secondsRemaining)
-		} else if shutdownTimer.Status() && secondsRemaining < 0 {
-			timerStatus = "complete, shutdown in progress"
-		} else if timerLockout == true {
-			timerStatus = "locked out"
-		}
-		fmt.Fprintf(w, "Shutdown timer is %s", timerStatus)
-	})
-
-	http.HandleFunc("/lockout", func(w http.ResponseWriter, r *http.Request) {
-		if timerLockout {
-			timerLockout = false
-		} else {
-			timerLockout = true
-		}
-		http.Redirect(w, r, "/status", http.StatusSeeOther)
-	})
+	http.HandleFunc("/status", HandleStatus(&shutdownTimer, &timerLockout))
+	http.HandleFunc("/lockout", HandleLockout(&timerLockout))
 
 	go func() {
 		for {
-			pinger, _ := probing.NewPinger(*target)
+			pinger, _ := probing.NewPinger(s.Target)
 			pinger.Count = 5
 			pinger.Timeout = 5 * time.Second
 			pinger.Run()
-			if (pinger.Statistics().PacketLoss == 100 && !timerLockout) {
+			if (pinger.Statistics().PacketLoss == 100 && !timerLockout && !shutdownTimer.Status()) {
 				fmt.Println("all pings failed")
-				shutdownTimer.StartAfterFunc(shutdown)	
-			} else {
+				_, err := notification.Send("all pings failed")
+				if err != nil {
+					log.Println(err)
+				}
+				shutdownTimer.StartAfterFunc(shutdown)
+
+			} else if ((pinger.Statistics().PacketLoss < 100 || timerLockout) && shutdownTimer.Status()) {
 				fmt.Println("some pings succeeded")
 				shutdownTimer.Stop()
+			} else {
+				fmt.Printf("no state change, current timer state is %s\n", shutdownTimer.Status())
 			}
 		}
 	}()
