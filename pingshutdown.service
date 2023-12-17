@@ -1,0 +1,13 @@
+[Unit]
+Description=Shut down local host when remote host not responding
+
+[Service]
+ExecStart=pingshutdown
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=pingshutdown
+EnvironmentFile=/etc/default/pingshutdown
+
+[Install]
+WantedBy=multi-user.target
