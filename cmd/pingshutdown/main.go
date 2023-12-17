@@ -58,15 +58,21 @@ func main() {
 		log.Println(err)
 	}
 
-	http.HandleFunc("/", HandleStatus(&shutdownTimer, &timerLockout))
+	http.HandleFunc("/", HandleStatus(&shutdownTimer, &timerLockout, &s))
 	http.HandleFunc("/lockout", HandleLockout(&timerLockout))
 
 	go func() {
 		for {
-			pinger, _ := probing.NewPinger(s.Target)
+			pinger, err := probing.NewPinger(s.Target)
+			if err != nil {
+				panic(err)
+			}
 			pinger.Count = 5
 			pinger.Timeout = 5 * time.Second
-			pinger.Run()
+			err = pinger.Run()
+			if err != nil {
+				panic(err)
+			}
 			if (pinger.Statistics().PacketLoss == 100 || pinger.Statistics().PacketsSent == 0) && !timerLockout && !shutdownTimer.Status() {
 				fmt.Println("all pings failed, timer started")
 				shutdownTimer.StartAfterFunc(shutdown)

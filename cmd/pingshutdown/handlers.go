@@ -8,7 +8,7 @@ import (
 	"github.com/devusb/pingshutdown/internal/countdown"
 )
 
-func HandleStatus(c *countdown.Countdown, lock *bool) http.HandlerFunc {
+func HandleStatus(c *countdown.Countdown, lock *bool, s *Specification) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		timerStatus := "not in progress"
 		secondsRemaining := c.EndTime().Sub(time.Now())
@@ -19,7 +19,7 @@ func HandleStatus(c *countdown.Countdown, lock *bool) http.HandlerFunc {
 		} else if *lock == true {
 			timerStatus = "locked out"
 		}
-		fmt.Fprintf(w, "Shutdown timer is %s", timerStatus)
+		fmt.Fprintf(w, "Pinging %s\nShutdown timer is %s", s.Target, timerStatus)
 	}
 }
 
