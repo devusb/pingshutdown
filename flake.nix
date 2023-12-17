@@ -26,7 +26,7 @@
             inherit version;
             
             src = ./.;
-            vendorHash = "sha256-0Wa9vvJZieiW1pYB4UrXJXNV5MRmWsh3LgrgPFdgU3A=";
+            vendorHash = "sha256-n0WW0DuNo5gyhYFWVdzJHS9MTCVRjy1zwd1UydGlqGQ=";
           };
           default = pingshutdown;
         });
@@ -38,6 +38,15 @@
         {
           default = pkgs.mkShell {
             buildInputs = with pkgs; [ go gopls gotools go-tools ];
+
+            PINGSHUTDOWN_DELAY = "15s";
+            PINGSHUTDOWN_TARGET = "192.0.2.100";
+
+            shellHook = ''
+              if [ -f ".env" ]; then
+                source .env
+              fi
+            '';
           };
         });
 
