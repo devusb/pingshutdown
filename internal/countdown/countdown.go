@@ -29,7 +29,7 @@ func (c *Countdown) StartAfterFunc(f func()) {
 
 func (c *Countdown) Stop() {
 	if c.runningStatus {
-		c.Stop()
+		c.timer.Stop()
 		c.endTime = time.Now()
 		c.runningStatus = false
 	}
