@@ -33,6 +33,10 @@ in
         ExecStart = "${getExe cfg.package}";
         RuntimeDirectory = "pingshutdown";
         RuntimeDirectoryMode = "0700";
+        Restart = "always";
+        StandardOutput = "syslog";
+        StandardError = "syslog";
+        SyslogIdentifier = "pingshutdown";
 
         EnvironmentFile = [
           cfg.environmentFile
