@@ -13,28 +13,33 @@
       version = builtins.substring 0 8 lastModifiedDate;
 
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
-
     in
-    {
+    rec {
       packages = forAllSystems (system:
         let
           pkgs = nixpkgsFor.${system};
         in
         rec {
-          pingshutdown = pkgs.buildGoModule {
-            pname = "pingshutdown";
-            inherit version;
-
-            src = ./.;
-            vendorHash = "sha256-n0WW0DuNo5gyhYFWVdzJHS9MTCVRjy1zwd1UydGlqGQ=";
-          };
+          pingshutdown = pkgs.callPackage ./package.nix { inherit version; }; 
           default = pingshutdown;
         });
+
+
+      overlays = {
+        default = final: prev: {
+          pingshutdown = prev.callPackage ./package.nix { inherit version; };
+        };
+      };
+
 
       nixosModules = {
         pingshutdown = {
           imports = [
             ./module.nix
+          ];
+
+          nixpkgs.overlays = [
+            self.overlays.default
           ];
         };
       };
