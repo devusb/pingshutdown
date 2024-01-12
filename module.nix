@@ -33,7 +33,6 @@ in
         ExecStart = "${getExe cfg.package}";
         RuntimeDirectory = "pingshutdown";
         RuntimeDirectoryMode = "0700";
-        DynamicUser = true;
 
         EnvironmentFile = [
           cfg.environmentFile
