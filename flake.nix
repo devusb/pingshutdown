@@ -24,15 +24,23 @@
           pingshutdown = pkgs.buildGoModule {
             pname = "pingshutdown";
             inherit version;
-            
+
             src = ./.;
             vendorHash = "sha256-n0WW0DuNo5gyhYFWVdzJHS9MTCVRjy1zwd1UydGlqGQ=";
           };
           default = pingshutdown;
         });
-      
+
+      nixosModules = {
+        pingshutdown = {
+          imports = [
+            ./module.nix
+          ];
+        };
+      };
+
       devShells = forAllSystems (system:
-        let 
+        let
           pkgs = nixpkgsFor.${system};
         in
         {
