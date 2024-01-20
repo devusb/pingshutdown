@@ -1,12 +1,11 @@
 [Unit]
 Description=Shut down local host when remote host not responding
+After=network.target network-online.target
+Wants=network-online.target
 
 [Service]
 ExecStart=pingshutdown
 Restart=always
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=pingshutdown
 EnvironmentFile=/etc/default/pingshutdown
 
 [Install]
