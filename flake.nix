@@ -44,13 +44,7 @@
 
       perSystem = { pkgs, ... }: {
         packages = rec {
-          pingshutdown = pkgs.buildGoModule {
-            pname = "pingshutdown";
-            inherit version;
-
-            src = ./.;
-            vendorHash = "sha256-n0WW0DuNo5gyhYFWVdzJHS9MTCVRjy1zwd1UydGlqGQ=";
-          };
+          pingshutdown = pkgs.callPackage ./package.nix { inherit version; }; 
           default = pingshutdown;
         };
 
