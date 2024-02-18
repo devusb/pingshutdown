@@ -13,7 +13,9 @@ To install manually, build the application as
 ```
 go build ./cmd/pingshutdown
 ```
-and put the binary in your `PATH` (e.g. `/usr/local/bin`). Then, copy the included `pingshutdown.service` into `/etc/systemd/system` and create an `EnvironmentFile` in `/etc/default/pingshutdown.env` containing your desired configuration (see `pingshutdown.env` for example syntax)
+and put the binary in your `PATH` (e.g. `/usr/local/bin`). 
+
+Then, copy the included `pingshutdown.service` into `/etc/systemd/system` and create an `EnvironmentFile` in `/etc/default/pingshutdown.env` containing your desired configuration (see `pingshutdown.env` for example syntax).
 
 ### NixOS Module Installation
 To install using the NixOS module, add this repository to your `flake.nix` as
@@ -54,4 +56,8 @@ Configuration is via environment variables, options are listed below
 - `PINGSHUTDOWN_STATUSPORT` - port to serve status web interface (default `8081`)
 
 ## Usage
-When started, `pingshutdown` will begin pinging the target, and upon ping failures occuring for 10 seconds, will begin a timer after which the host system will be shut down. When the timer begins, an optional notification will be set to the Pushover user specified via the `PINGSHUTDOWN_NOTIFICATONUSER` environment variable. A web interface is available at the port configure via `PINGSHUTDOWN_STATUSPORT` that shows timer status and enables locking out (disabling) the shutdown functionality, as might be necessary during network maintenance.
+When started, `pingshutdown` will begin pinging the target, and upon ping failures occuring for 10 seconds, will begin a timer after which the host system will be shut down. 
+
+When the timer begins, an optional notification will be set to the Pushover user specified via the `PINGSHUTDOWN_NOTIFICATONUSER` environment variable. 
+
+A web interface is available at the port configure via `PINGSHUTDOWN_STATUSPORT` that shows timer status and enables locking out (disabling) the shutdown functionality, as might be necessary during network maintenance.
