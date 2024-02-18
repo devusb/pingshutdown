@@ -3,52 +3,58 @@
 
   # Nixpkgs / NixOS version to use.
   inputs.nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
+  inputs.hercules-ci-effects.url = "github:hercules-ci/hercules-ci-effects";
 
-  outputs = { self, nixpkgs }:
+  outputs = inputs@{ self, nixpkgs, flake-parts, hercules-ci-effects }:
     let
       supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
       lastModifiedDate = self.lastModifiedDate or self.lastModified or "19700101";
       version = builtins.substring 0 8 lastModifiedDate;
-
-      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
     in
-    rec {
-      packages = forAllSystems (system:
-        let
-          pkgs = nixpkgsFor.${system};
-        in
-        rec {
-          pingshutdown = pkgs.callPackage ./package.nix { inherit version; }; 
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        hercules-ci-effects.flakeModule
+      ];
+
+      systems = supportedSystems;
+      herculesCI.ciSystems = [ "x86_64-linux" ];
+
+      flake = {
+        overlays = {
+          default = final: prev: {
+            pingshutdown = prev.callPackage ./package.nix { inherit version; };
+          };
+        };
+
+
+        nixosModules = {
+          pingshutdown = {
+            imports = [
+              ./module.nix
+            ];
+
+            nixpkgs.overlays = [
+              self.overlays.default
+            ];
+          };
+        };
+      };
+
+      perSystem = { pkgs, ... }: {
+        packages = rec {
+          pingshutdown = pkgs.buildGoModule {
+            pname = "pingshutdown";
+            inherit version;
+
+            src = ./.;
+            vendorHash = "sha256-n0WW0DuNo5gyhYFWVdzJHS9MTCVRjy1zwd1UydGlqGQ=";
+          };
           default = pingshutdown;
-        });
-
-
-      overlays = {
-        default = final: prev: {
-          pingshutdown = prev.callPackage ./package.nix { inherit version; };
         };
-      };
 
-
-      nixosModules = {
-        pingshutdown = {
-          imports = [
-            ./module.nix
-          ];
-
-          nixpkgs.overlays = [
-            self.overlays.default
-          ];
-        };
-      };
-
-      devShells = forAllSystems (system:
-        let
-          pkgs = nixpkgsFor.${system};
-        in
-        {
+        devShells = {
           default = pkgs.mkShell {
             buildInputs = with pkgs; [ go gopls gotools go-tools ];
 
@@ -63,8 +69,8 @@
               fi
             '';
           };
-        });
+        };
+      };
 
-      defaultPackage = forAllSystems (system: self.packages.${system}.pingshutdown);
     };
 }
