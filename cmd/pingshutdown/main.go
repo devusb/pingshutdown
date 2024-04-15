@@ -77,10 +77,13 @@ func main() {
 				fmt.Println("all pings failed, timer started")
 				shutdownTimer.StartAfterFunc(shutdown)
 				if s.Notification {
-					_, err := notification.Send(fmt.Sprintf("%s shutdown timer has started, shutdown at %s", hostname, shutdownTimer.EndTime()))
-					if err != nil {
-						log.Println(err)
-					}
+					go func() {
+						_, err := notification.Send(fmt.Sprintf("%s shutdown timer has started, shutdown at %s", hostname, shutdownTimer.EndTime()))
+						if err != nil {
+							log.Println(err)
+						}
+					}()
+
 				}
 
 			} else if (pinger.Statistics().PacketLoss < 100 || timerLockout) && shutdownTimer.Status() {
