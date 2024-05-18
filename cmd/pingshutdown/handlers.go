@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/devusb/pingshutdown/internal/countdown"
+	"github.com/devusb/pingshutdown/pkg/countdown"
 )
 
 func HandleStatus(c *countdown.Countdown, lock *bool, s *Specification) http.HandlerFunc {

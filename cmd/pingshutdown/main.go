@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/devusb/pingshutdown/internal/countdown"
-	"github.com/devusb/pingshutdown/internal/pushover"
+	"github.com/devusb/pingshutdown/pkg/countdown"
+	"github.com/devusb/pingshutdown/pkg/pushover"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus-community/pro-bing"
 )
