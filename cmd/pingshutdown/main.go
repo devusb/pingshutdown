@@ -65,13 +65,15 @@ func main() {
 		for {
 			pinger, err := probing.NewPinger(s.Target)
 			if err != nil {
-				panic(err)
+				log.Fatalf("Failed to initialize: %s\n", err)
 			}
 			pinger.Count = 5
 			pinger.Timeout = 5 * time.Second
 			err = pinger.Run()
 			if err != nil {
-				panic(err)
+				log.Printf("Failed to execute ping: %s\n", err)
+				time.Sleep(10 * time.Second)
+				continue
 			}
 			if (pinger.Statistics().PacketLoss == 100 || pinger.Statistics().PacketsSent == 0) && !timerLockout && !shutdownTimer.Status() {
 				fmt.Println("all pings failed, timer started")
